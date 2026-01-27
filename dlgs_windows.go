@@ -29,6 +29,18 @@ func (b *MsgBuilder) yesNo() bool {
 	return r == w32.IDYES
 }
 
+func (b *MsgBuilder) yesNoCancel() YesNoCancelResult {
+	r := w32.MessageBox(w32.HWND(0), b.Msg, firstOf(b.Dlg.Title, "Confirm?"), w32.MB_YESNOCANCEL)
+	switch r {
+	case w32.IDYES:
+		return YesNoCancelYes
+	case w32.IDNO:
+		return YesNoCancelNo
+	default:
+		return YesNoCancelCancel
+	}
+}
+
 func (b *MsgBuilder) info() {
 	w32.MessageBox(w32.HWND(0), b.Msg, firstOf(b.Dlg.Title, "Information"), w32.MB_OK|w32.MB_ICONINFORMATION)
 }

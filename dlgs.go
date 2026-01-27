@@ -23,6 +23,15 @@ var ErrCancelled = errors.New("Cancelled")
 // Deprecated: Use ErrCancelled instead.
 var Cancelled = ErrCancelled
 
+// YesNoCancelResult represents the result of a Yes/No/Cancel dialog.
+type YesNoCancelResult int
+
+const (
+	YesNoCancelYes    YesNoCancelResult = iota // User clicked Yes
+	YesNoCancelNo                              // User clicked No
+	YesNoCancelCancel                          // User clicked Cancel
+)
+
 // Dlg is the common type for dialogs.
 type Dlg struct {
 	Title string
@@ -49,6 +58,12 @@ func (b *MsgBuilder) Title(title string) *MsgBuilder {
 // Returns true iff the user selected "Yes".
 func (b *MsgBuilder) YesNo() bool {
 	return b.yesNo()
+}
+
+// YesNoCancel spawns the message dialog with three buttons: "Yes", "No", and "Cancel".
+// Returns YesNoCancelYes, YesNoCancelNo, or YesNoCancelCancel based on the user's selection.
+func (b *MsgBuilder) YesNoCancel() YesNoCancelResult {
+	return b.yesNoCancel()
 }
 
 // Info spawns the message dialog with an information icon and single button, "Ok".

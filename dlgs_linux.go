@@ -55,6 +55,42 @@ func (b *MsgBuilder) yesNo() bool {
 	return runMsgDlg("Confirm?", 0, C.GTK_MESSAGE_QUESTION, C.GTK_BUTTONS_YES_NO, b) == C.GTK_RESPONSE_YES
 }
 
+func (b *MsgBuilder) yesNoCancel() YesNoCancelResult {
+	checkStatus()
+	cmsg := C.CString(b.Msg)
+	defer C.free(unsafe.Pointer(cmsg))
+	// Create dialog with no buttons initially
+	dlg := C.msgdlg(nil, 0, C.GTK_MESSAGE_QUESTION, C.GTK_BUTTONS_NONE, cmsg)
+	ctitle := C.CString(firstOf(b.Dlg.Title, "Confirm?"))
+	defer C.free(unsafe.Pointer(ctitle))
+	C.gtk_window_set_title((*C.GtkWindow)(unsafe.Pointer(dlg)), ctitle)
+	
+	// Add Yes, No, Cancel buttons
+	gtkDlg := (*C.GtkDialog)(unsafe.Pointer(dlg))
+	cyesLabel := C.CString("Yes")
+	defer C.free(unsafe.Pointer(cyesLabel))
+	cnoLabel := C.CString("No")
+	defer C.free(unsafe.Pointer(cnoLabel))
+	ccancelLabel := C.CString("Cancel")
+	defer C.free(unsafe.Pointer(ccancelLabel))
+	
+	C.gtk_dialog_add_button(gtkDlg, cyesLabel, C.GTK_RESPONSE_YES)
+	C.gtk_dialog_add_button(gtkDlg, cnoLabel, C.GTK_RESPONSE_NO)
+	C.gtk_dialog_add_button(gtkDlg, ccancelLabel, C.GTK_RESPONSE_CANCEL)
+	
+	defer closeDialog(dlg)
+	r := C.gtk_dialog_run(gtkDlg)
+	
+	switch r {
+	case C.GTK_RESPONSE_YES:
+		return YesNoCancelYes
+	case C.GTK_RESPONSE_NO:
+		return YesNoCancelNo
+	default:
+		return YesNoCancelCancel
+	}
+}
+
 func (b *MsgBuilder) info() {
 	runMsgDlg("Information", 0, C.GTK_MESSAGE_INFO, C.GTK_BUTTONS_OK, b)
 }
